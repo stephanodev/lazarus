@@ -1519,6 +1519,7 @@ type
     property OnMouseDown;
     property OnMouseMove;
     property OnMouseUp;
+    property OnMouseWheel;
     property OnMouseWheelDown;
     property OnMouseWheelUp;
     property OnPickListSelect;
