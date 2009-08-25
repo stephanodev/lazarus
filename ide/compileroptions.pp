@@ -73,7 +73,35 @@ type
 
   TBuildModeGraph = class;
 
-  { TIDEBuildVariables }
+  { TBuildMode }
+
+  TBuildMode = class
+  private
+    FGraph: TBuildModeGraph;
+    FIncludes: TFPList;// list of TBuildMode
+    FIncludedBy: TFPList;// list of TBuildMode
+    FName: string;
+    FStoredInSession: boolean;
+    function GetIncludeCount: integer;
+    function GetIncludedBy(Index: integer): TBuildMode;
+    function GetIncludedByCount: integer;
+    function GetIncludes(Index: integer): TBuildMode;
+    procedure SetName(const AValue: string);
+    procedure SetStoredInSession(const AValue: boolean);
+  public
+    constructor Create(aGraph: TBuildModeGraph; const aName: string);
+    destructor Destroy; override;
+  public
+    property Name: string read FName write SetName;
+    property Graph: TBuildModeGraph read FGraph;
+    property StoredInSession: boolean read FStoredInSession write SetStoredInSession;
+    property IncludeCount: integer read GetIncludeCount;
+    property Includes[Index: integer]: TBuildMode read GetIncludes;
+    property IncludedByCount: integer read GetIncludedByCount;
+    property IncludedBy[Index: integer]: TBuildMode read GetIncludedBy;
+  end;
+
+  { TIDEBuildVariables - every package and project has a list of variables }
 
   TIDEBuildVariables = class(TLazBuildVariables)
   private
@@ -100,7 +128,7 @@ type
     procedure CreateDiff(OtherProperties: TLazBuildVariables;
                          Tool: TCompilerDiffTool);
     procedure Assign(Source: TLazBuildVariables);
-    property BuildPropertySet: TBuildModeGraph read FBuildModeGraph write SetBuildPropertySet;// active in BuildModeSet
+    property BuildModeGraph: TBuildModeGraph read FBuildModeGraph write SetBuildPropertySet;// active in BuildModeSet
   end;
 
   { TBuildModeGraph }
@@ -108,7 +136,7 @@ type
   TBuildModeGraph = class
   private
     FEvaluator: TExpressionEvaluator;
-    FFirstBuildVars: TIDEBuildVariables;
+    FFirstBuildVars: TIDEBuildVariables; // all active lists of build variables
     procedure Changed;
   public
     constructor Create;
@@ -119,9 +147,9 @@ type
     property Evaluator: TExpressionEvaluator read FEvaluator;
   end;
 
-  { TGlobalBuildProperties }
+  { TDefaultBuildModeGraph }
 
-  TGlobalBuildProperties = class(TBuildModeGraph)
+  TDefaultBuildModeGraph = class(TBuildModeGraph)
   private
     FMainProperty: TIDEBuildVariable;
     FStdProperties: TIDEBuildVariables;
@@ -611,7 +639,7 @@ type
   TCompilerOptions = TBaseCompilerOptions;
 
 var
-  GlobalBuildProperties: TGlobalBuildProperties;
+  DefaultBuildModeGraph: TDefaultBuildModeGraph;
 
 const
   CompileReasonNames: array[TCompileReason] of string = (
@@ -955,7 +983,7 @@ constructor TBaseCompilerOptions.Create(const AOwner: TObject;
   const AToolClass: TCompilationToolClass);
 begin
   inherited Create(AOwner);
-  FConditionals := TCompOptConditionals.Create(GlobalBuildProperties.Evaluator);
+  FConditionals := TCompOptConditionals.Create(DefaultBuildModeGraph.Evaluator);
   FParsedOpts := TParsedCompilerOptions.Create(TCompOptConditionals(FConditionals));
   FExecuteBefore := AToolClass.Create;
   FExecuteAfter := AToolClass.Create;
@@ -3063,7 +3091,7 @@ end;
 constructor TAdditionalCompilerOptions.Create(TheOwner: TObject);
 begin
   fOwner:=TheOwner;
-  FConditionals:=TCompOptConditionals.Create(GlobalBuildProperties.Evaluator);
+  FConditionals:=TCompOptConditionals.Create(DefaultBuildModeGraph.Evaluator);
   FParsedOpts:=TParsedCompilerOptions.Create(FConditionals);
   Clear;
 end;
@@ -3536,7 +3564,7 @@ constructor TIDEBuildVariable.Create;
 begin
   FValues:=TStringList.Create;
   FValueDescriptions:=TStringList.Create;
-  FDefaultValue:=TCompOptConditionals.Create(GlobalBuildProperties.Evaluator);
+  FDefaultValue:=TCompOptConditionals.Create(DefaultBuildModeGraph.Evaluator);
   FDefaultValue.Root.NodeType:=cocntAddValue;
   FDefaultValue.Root.ValueType:=cocvtNone;
 end;
@@ -3682,7 +3710,7 @@ end;
 
 destructor TIDEBuildVariables.Destroy;
 begin
-  BuildPropertySet:=nil;
+  BuildModeGraph:=nil;
   Clear;
   FreeAndNil(FItems);
   inherited Destroy;
@@ -3763,9 +3791,9 @@ begin
   end;
 end;
 
-{ TGlobalBuildProperties }
+{ TDefaultBuildModeGraph }
 
-procedure TGlobalBuildProperties.AddStandardModes;
+procedure TDefaultBuildModeGraph.AddStandardModes;
 begin
   FStdProperties:=TIDEBuildVariables.Create(Self);
 
@@ -3813,7 +3841,7 @@ begin
       +'symbian';
   TargetOS.SetDefaultValue(GetDefaultTargetOS);
 
-  StdModes.BuildPropertySet:=Self;
+  StdModes.BuildModeGraph:=Self;
 end;
 
 { TCompilerMessagesList }
@@ -4401,6 +4429,53 @@ begin
     Result := GetUserText([]); 
 end;
 
+
+{ TBuildMode }
+
+function TBuildMode.GetIncludedBy(Index: integer): TBuildMode;
+begin
+  Result:=TBuildMode(FIncludedBy[Index]);
+end;
+
+function TBuildMode.GetIncludeCount: integer;
+begin
+  Result:=FIncludes.Count;
+end;
+
+function TBuildMode.GetIncludedByCount: integer;
+begin
+  Result:=FIncludedBy.Count;
+end;
+
+function TBuildMode.GetIncludes(Index: integer): TBuildMode;
+begin
+  Result:=TBuildMode(FIncludes[Index]);
+end;
+
+procedure TBuildMode.SetName(const AValue: string);
+begin
+  if FName=AValue then exit;
+  FName:=AValue;
+end;
+
+procedure TBuildMode.SetStoredInSession(const AValue: boolean);
+begin
+  if FStoredInSession=AValue then exit;
+  FStoredInSession:=AValue;
+end;
+
+constructor TBuildMode.Create(aGraph: TBuildModeGraph; const aName: string);
+begin
+  FIncludes:=TFPList.Create;
+  FIncludedBy:=TFPList.Create;
+end;
+
+destructor TBuildMode.Destroy;
+begin
+  FreeAndNil(FIncludes);
+  FreeAndNil(FIncludedBy);
+  inherited Destroy;
+end;
 
 initialization
   CompilerParseStamp:=1;
