@@ -1577,7 +1577,7 @@ begin
 end;
 
 function TCustomFormEditor.CreateComponent(ParentCI: TIComponentInterface;
-  TypeClass: TComponentClass; const AUnitName: shortstring; X,Y,W,H: Integer
+  TypeClass: TComponentClass; const AUnitName: shortstring; X, Y, W, H: Integer
   ): TIComponentInterface;
 var
   Temp: TComponentInterface;
@@ -1593,12 +1593,14 @@ var
   DesignForm: TCustomForm;
   NewUnitName: String;
   s: String;
+  Mediator: TDesignerMediator;
 begin
   Result:=nil;
   Temp:=nil;
   ParentComponent:=nil;
   AParent:=nil;
   NewComponent:=nil;
+  Mediator:=nil;
   try
     //DebugLn(['[TCustomFormEditor.CreateComponent] Class="'+TypeClass.ClassName+'" ',X,',',Y,',',W,'x',H]);
     {$IFDEF IDE_MEM_CHECK}CheckHeapWrtMemCnt('TCustomFormEditor.CreateComponent A');{$ENDIF}
@@ -1608,6 +1610,7 @@ begin
     begin
       // add as child component
       ParentComponent := TComponentInterface(ParentCI).Component;
+      Mediator:=GetDesignerMediatorByComponent(ParentComponent);
       OwnerComponent := ParentComponent;
       if OwnerComponent.Owner <> nil then
         OwnerComponent := OwnerComponent.Owner;
@@ -1764,6 +1767,11 @@ begin
           DesignForm := GetDesignerForm(ParentComponent);
           if DesignForm <> nil then DesignForm.Invalidate;
         end;
+        if Mediator<>nil then begin
+          Mediator.InitComponent(NewComponent,ParentComponent,
+            Bounds(CompLeft,CompTop,CompWidth,CompHeight));
+        end;
+
       end;
     except
       on e: Exception do begin
@@ -1779,7 +1787,7 @@ begin
 
     {$IFDEF IDE_MEM_CHECK}CheckHeapWrtMemCnt('TCustomFormEditor.CreateComponent F ');{$ENDIF}
     // add to component list
-    DebugLn(['TCustomFormEditor.CreateComponent ',dbgsName(NewComponent),' ',FindComponent(NewComponent)<>nil]);
+    //DebugLn(['TCustomFormEditor.CreateComponent ',dbgsName(NewComponent),' ',FindComponent(NewComponent)<>nil]);
     if FindComponent(NewComponent)=nil then
       FComponentInterfaces.Add(Temp);
 
