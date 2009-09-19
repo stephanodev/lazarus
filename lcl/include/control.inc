@@ -2591,10 +2591,11 @@ end;
 ------------------------------------------------------------------------------}
 procedure TControl.SetCursor(Value: TCursor);
 begin
-  if FCursor <> Value
-  then begin
+  if FCursor <> Value then 
+  begin
     FCursor := Value;
-    SetTempCursor(Value);
+    if not (csDesigning in ComponentState) then
+      SetTempCursor(Value);
   end;
 end;
 
