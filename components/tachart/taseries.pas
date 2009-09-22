@@ -240,7 +240,7 @@ type
 
   { TFuncSeries }
 
-  TFuncSeries = class(TBasicChartSeries)
+  TFuncSeries = class(TCustomChartSeries)
   private
     FExtent: TChartExtent;
     FOnCalculate: TFuncCalculateEvent;
@@ -256,14 +256,8 @@ type
     function GetLegendCount: Integer; override;
     function GetLegendWidth(ACanvas: TCanvas): Integer; override;
     function GetSeriesColor: TColor; override;
-    procedure SetActive(AValue: Boolean); override;
-    procedure SetDepth(AValue: TChartDistance); override;
     procedure SetSeriesColor(const AValue: TColor); override;
-    procedure SetShowInLegend(AValue: Boolean); override;
-    procedure SetZPosition(AValue: TChartDistance); override;
-    procedure StyleChanged(Sender: TObject);
     procedure UpdateBounds(var ABounds: TDoubleRect); override;
-    procedure UpdateParentChart;
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -1056,7 +1050,6 @@ end;
 constructor TFuncSeries.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  FActive := true;
   FExtent := TChartExtent.Create(FChart);
   FShowInLegend := true;
   FPen := TChartPen.Create;
@@ -1110,7 +1103,7 @@ procedure TFuncSeries.DrawLegend(ACanvas: TCanvas; const ARect: TRect);
 var
   y: Integer;
 begin
-  ACanvas.TextOut(ARect.Right + 3, ARect.Top, Title);
+  inherited DrawLegend(ACanvas, ARect);
   ACanvas.Pen.Assign(Pen);
   y := (ARect.Top + ARect.Bottom) div 2;
   ACanvas.Line(ARect.Left, y, ARect.Right, y);
@@ -1134,20 +1127,6 @@ end;
 function TFuncSeries.IsEmpty: Boolean;
 begin
   Result := not Assigned(OnCalculate);
-end;
-
-procedure TFuncSeries.SetActive(AValue: Boolean);
-begin
-  if FActive = AValue then exit;
-  FActive := AValue;
-  UpdateParentChart;
-end;
-
-procedure TFuncSeries.SetDepth(AValue: TChartDistance);
-begin
-  if FDepth = AValue then exit;
-  FDepth := AValue;
-  UpdateParentChart;
 end;
 
 procedure TFuncSeries.SetExtent(const AValue: TChartExtent);
@@ -1178,29 +1157,10 @@ begin
   UpdateParentChart;
 end;
 
-procedure TFuncSeries.SetShowInLegend(AValue: Boolean);
-begin
-  if FShowInLegend = AValue then exit;
-  FShowInLegend := AValue;
-  UpdateParentChart;
-end;
-
 procedure TFuncSeries.SetStep(AValue: TFuncSeriesStep);
 begin
   if FStep = AValue then exit;
   FStep := AValue;
-  UpdateParentChart;
-end;
-
-procedure TFuncSeries.SetZPosition(AValue: TChartDistance);
-begin
-  if FZPosition = AValue then exit;
-  FZPosition := AValue;
-  UpdateParentChart;
-end;
-
-procedure TFuncSeries.StyleChanged(Sender: TObject);
-begin
   UpdateParentChart;
 end;
 
@@ -1212,12 +1172,6 @@ begin
     if UseXMax and (XMax > ABounds.b.X) then ABounds.b.X := XMax;
     if UseYMax and (YMax > ABounds.b.Y) then ABounds.b.Y := YMax;
   end;
-end;
-
-procedure TFuncSeries.UpdateParentChart;
-begin
-  if ParentChart <> nil then
-    ParentChart.Invalidate;
 end;
 
 initialization
