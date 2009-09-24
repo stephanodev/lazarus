@@ -3540,7 +3540,9 @@ end;
 ------------------------------------------------------------------------------}
 procedure TControl.SetPopupMenu(Value: TPopupMenu);
 begin
-  FPopupMenu :=  Value;
+  FPopupMenu := Value;
+  if FPopupMenu <> nil then
+    FPopupMenu.FreeNotification(Self);
 end;
 
 {------------------------------------------------------------------------------
