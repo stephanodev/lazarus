@@ -1001,8 +1001,8 @@ end;
 {------------------------------------------------------------------------------
        TControl.DoEndDrag
 ------------------------------------------------------------------------------}
-Procedure TControl.DoEndDrag(Target: TObject; X,Y: Integer);
-Begin
+procedure TControl.DoEndDrag(Target: TObject; X,Y: Integer);
+begin
   {$IFDEF VerboseDrag}
   DebugLn('TControl.DoEndDrag ',Name,':',ClassName,' XY=',IntToStr(X),',',IntToStr(Y));
   {$ENDIF}
@@ -1036,7 +1036,7 @@ function TControl.GetClientOrigin: TPoint;
                            +Name+':'+ClassName);
   end;
 
-Begin
+begin
   //Assert(False, Format('Trace:[TControl.GetClientOrigin] %s',  [Classname]));
   if Parent = nil then
     RaiseParentNil;
@@ -1136,7 +1136,7 @@ var
   AWinTarget: TWinControl;
   Accepts: Boolean;
   P: TPoint;
-Begin
+begin
   Result := 0;
   {$IFDEF VerboseDrag}
   DebugLn('TControl.DoDragMsg ',Name,':',ClassName,' DragMsg.DragMessage=',IntToStr(ord(ADragMessage)));
@@ -1178,7 +1178,7 @@ end;
 {------------------------------------------------------------------------------
   TControl.DragOver
 ------------------------------------------------------------------------------}
-Procedure TControl.DragOver(Source: TObject; X,Y : Integer; State: TDragState;
+procedure TControl.DragOver(Source: TObject; X,Y : Integer; State: TDragState;
   var Accept:Boolean);
 begin
   {$IFDEF VerboseDrag}
@@ -1194,7 +1194,7 @@ end;
 {------------------------------------------------------------------------------
   TControl.DragDrop
 ------------------------------------------------------------------------------}
-Procedure TControl.DragDrop(Source: TObject; X,Y : Integer);
+procedure TControl.DragDrop(Source: TObject; X,Y : Integer);
 begin
   {$IFDEF VerboseDrag}
   DebugLn('TControl.DragDrop ',Name,':',ClassName,' XY=',IntToStr(X),',',IntToStr(Y));
@@ -2328,7 +2328,7 @@ end;
        TControl SetAutoSize
 ------------------------------------------------------------------------------}
 procedure TControl.SetAutoSize(value : Boolean);
-Begin
+begin
   If AutoSize <> Value then begin
     FAutoSize := Value;
     //debugln('TControl.SetAutoSize ',DbgSName(Self));
@@ -2510,7 +2510,7 @@ end;
        TControl SetBoundsRect
 ------------------------------------------------------------------------------}
 procedure TControl.SetBoundsRect(const ARect : TRect);
-Begin
+begin
   {$IFDEF CHECK_POSITION}
   if CheckPosition(Self) then
   DebugLn('[TControl.SetBoundsRect] ',Name,':',ClassName);
@@ -2789,7 +2789,7 @@ end;
   TControl IsCaptionStored
 ------------------------------------------------------------------------------}
 function TControl.IsCaptionStored: Boolean;
-Begin
+begin
   Result := (ActionLink = nil) or not ActionLink.IsCaptionLinked;
 end;
 
@@ -3528,7 +3528,7 @@ end;
   TControl SetParentShowHint
 ------------------------------------------------------------------------------}
 procedure TControl.SetParentShowHint(Value : Boolean);
-Begin
+begin
   if FParentShowHint <> Value then
   begin
     FParentShowHint := Value;
