@@ -1263,9 +1263,6 @@ var
 begin
   if not WSCheckHandleAllocated(AWinControl, 'SetText') then
     Exit;
-  {$IFDEF VerboseTWinControlRealText}
-  DebugLn(['TGtkWSCustomEdit.SetText START ',DbgSName(AWinControl),' AText="',AText,'"']);
-  {$ENDIF}
   Widget:=PGtkWidget(AWinControl.Handle);
   LockOnChange(PgtkObject(Widget), +1);
   try
@@ -1279,10 +1276,6 @@ begin
   FillByte(Mess,SizeOf(Mess),0);
   Mess.Msg := CM_TEXTCHANGED;
   DeliverMessage(AWinControl, Mess);
-
-  {$IFDEF VerboseTWinControlRealText}
-  DebugLn(['TGtkWSCustomEdit.SetText END ',DbgSName(AWinControl),' New="',gtk_entry_get_text(PGtkEntry(AWinControl.Handle)),'"']);
-  {$ENDIF}
 end;
 
 class procedure TGtkWSCustomEdit.GetPreferredSize(const AWinControl: TWinControl;
