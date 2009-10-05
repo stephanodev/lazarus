@@ -4415,11 +4415,7 @@ begin
   end;
 end;
 {$ENDIF}
-
-
-end;
-
-  {$ENDIF}
+{$ENDIF}
 
 procedure FreeLineInfoCache;
 var
